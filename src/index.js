@@ -241,7 +241,7 @@ module.exports = class Zen {
     * Creates a new Credential keypair.
     * @param {string} nameIssuer  Issuer of the credential.
     * @param {object} issuerKeyPair Keypair for the Issuer (Zencode format)
-    * @param {object} signatureRequest signature Request by the Credential Hoolder.
+    * @param {object} signatureRequest signature Request by the Credential Holder.
     * @return {promise} Return a promise with the execution of the creation.
     */
   signCredentialSignatureRequest (nameIssuer, issuerKeyPair, signatureRequest) {
@@ -259,7 +259,7 @@ module.exports = class Zen {
   }
 
   /**
-    * Aggregaes signature to the credential Proof.
+    * Aggregates signature to the credential Proof.
     * @param {string} name  Holder of the keypair.
     * @param {object} credentialKeyPair Keypair for the credentials (Zencode format)
     * @param {object} credentialSignature Credential Request Signature
