@@ -4,6 +4,7 @@
     "Zencode",
     "Zenroom",
     "encrypter",
-    "keypairs"
+    "keypairs",
+    "zprocess"
   ]
 }
