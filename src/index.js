@@ -26,14 +26,15 @@ const zenroom = require('zenroom')
 // }
 /**
  * Javascript Class to interact with Zenroom.
-*/
+ */
 module.exports = class Zen {
   /**
-    * Executes Zencode.
-    * @param {object} keys  Input keys.
-    * @param {string} script Zencode to be executed
-    * @return {promise} Return a promise with the execution of the script.
-    */
+   * Executes Zencode.
+   *
+   * @param {object} keys  Input keys.
+   * @param {string} script Zencode to be executed
+   * @returns {Promise} Return a promise with the execution of the script.
+   */
   execute (keys, script) {
     const options = { verbosity: 0 } // They need to implement verbosity https://github.com/DECODEproject/Zenroom/blob/master/bindings/javascript/src/wrapper.js
     return new Promise((resolve, reject) => {
@@ -53,10 +54,11 @@ module.exports = class Zen {
   }
 
   /**
-    * Creates a new keypair.
-    * @param {string} name  Holder of the keypair.
-    * @return {promise} Return a promise with the execution of the creation.
-    */
+   * Creates a new keypair.
+   *
+   * @param {string} name  Holder of the keypair.
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
   newKeyPair (name) {
     const zprocess = () => this.execute(false,
       `rule check version 1.0.0
@@ -69,10 +71,12 @@ module.exports = class Zen {
   }
 
   /**
-    * Creates a new keypair.
-    * @param {string} name  Holder of the keypair.
-    * @return {promise} Return a promise with the execution of the creation.
-    */
+   * Creates a new keypair.
+   *
+   * @param {string} name  Holder of the keypair.
+   * @param {*} keys to create
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
   publicKey (name, keys) {
     const zprocess = () => this.execute(keys,
       `rule check version 1.0.0
@@ -85,14 +89,15 @@ module.exports = class Zen {
   }
 
   /**
-    * Encrypts a message with a keypair.
-    * @param {string} fromName Who's signing the message.
-    * @param {object} fromKeys Keypair for the encrypter (Zencode format)
-    * @param {string} toName Who's receiving the message.
-    * @param {object} toKeys Public Key for the receiver (Zencode format)
-    * @param {string} message Message to be encrypted
-    * @return {promise} Return a promise with the execution of the encryption.
-    */
+   * Encrypts a message with a keypair.
+   *
+   * @param {string} fromName Who's signing the message.
+   * @param {object} fromKeys Keypair for the encrypter (Zencode format)
+   * @param {string} toName Who's receiving the message.
+   * @param {object} toKeys Public Key for the receiver (Zencode format)
+   * @param {string} message Message to be encrypted
+   * @returns {Promise} Return a promise with the execution of the encryption.
+   */
   encryptMessage (fromName, fromKeys, toName, toKeys, message) {
     const zprocess = () => this.execute([fromKeys, toKeys],
       `Rule check version 1.0.0
@@ -109,14 +114,15 @@ module.exports = class Zen {
   }
 
   /**
-    * Decrypts a message with a keypair.
-    * @param {string} fromName Who's signing the message.
-    * @param {object} fromKeys Keypair for the encrypter (Zencode format)
-    * @param {string} toName Who's receiving the message.
-    * @param {object} toKeys Public Key for the receiver (Zencode format)
-    * @param {string} message Message to be decrypted
-    * @return {promise} Return a promise with the execution of the encryption.
-    */
+   * Decrypts a message with a keypair.
+   *
+   * @param {string} fromName Who's signing the message.
+   * @param {object} fromKeys Keypair for the encrypter (Zencode format)
+   * @param {string} toName Who's receiving the message.
+   * @param {object} toKeys Public Key for the receiver (Zencode format)
+   * @param {string} message Message to be decrypted
+   * @returns {Promise} Return a promise with the execution of the encryption.
+   */
   decryptMessage (fromName, fromKeys, toName, toKeys, message) {
     const zprocess = () => this.execute([fromKeys, toKeys, message],
       `Rule check version 1.0.0
@@ -133,12 +139,13 @@ module.exports = class Zen {
   }
 
   /**
-    * Signs a message with a keypair.
-    * @param {string} signer Who's signing the message.
-    * @param {object} keys Keypair for the signer (Zencode format)
-    * @param {string} message Message to be signed
-    * @return {promise} Returns a promise with the execution of the signature.
-    */
+   * Signs a message with a keypair.
+   *
+   * @param {string} signer Who's signing the message.
+   * @param {object} keys Keypair for the signer (Zencode format)
+   * @param {string} message Message to be signed
+   * @returns {Promise} Returns a promise with the execution of the signature.
+   */
   signMessage (signer, keys, message) {
     const zprocess = () => this.execute(keys,
       `Rule check version 1.0.0
@@ -154,13 +161,14 @@ module.exports = class Zen {
   }
 
   /**
-    * Checks signature of a message.
-    * @param {string} signer Who's signing the message.
-    * @param {object} signerPublic Who's signing the message, public Key.
-    * @param {object} signature Signature of the message.
-    * @param {string} verifier Message to be checked
-    * @return {promise} Returns a promise with the execution of the signature.
-    */
+   * Checks signature of a message.
+   *
+   * @param {string} signer Who's signing the message.
+   * @param {object} signerPublic Who's signing the message, public Key.
+   * @param {object} signature Signature of the message.
+   * @param {string} verifier Message to be checked
+   * @returns {Promise} Returns a promise with the execution of the signature.
+   */
   checkSignature (signer, signerPublic, signature, verifier) {
     const checkScript = `
       rule check version 1.0.0
@@ -178,10 +186,11 @@ module.exports = class Zen {
   }
 
   /**
-    * Creates a new Issuer keypair.
-    * @param {string} name  Issuer of the credential keypair.
-    * @return {promise} Return a promise with the execution of the creation.
-    */
+   * Creates a new Issuer keypair.
+   *
+   * @param {string} name  Issuer of the credential keypair.
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
   newIssuerKeyPair (name) {
     const zprocess = () => this.execute(false, `rule check version 1.0.0
     Scenario 'coconut': issuer keygen
@@ -192,11 +201,12 @@ module.exports = class Zen {
   }
 
   /**
-    * ZKP : Get the Verifier to be published.
-    * @param {string} verifier Who's signing the message.
-    * @param {object} keys Keypair for the signer (Zencode format)
-    * @return {promise} Returns a promise with the execution of the signature.
-    */
+   * ZKP : Get the Verifier to be published.
+   *
+   * @param {string} verifier Who's signing the message.
+   * @param {object} keys Keypair for the signer (Zencode format)
+   * @returns {Promise} Returns a promise with the execution of the signature.
+   */
   publishVerifier (verifier, keys) {
     const zprocess = () => this.execute(keys,
       `rule check version 1.0.0
@@ -209,10 +219,11 @@ module.exports = class Zen {
   }
 
   /**
-    * Creates a new Credential keypair.
-    * @param {string} name  Holder of the keypair.
-    * @return {promise} Return a promise with the execution of the creation.
-    */
+   * Creates a new Credential keypair.
+   *
+   * @param {string} name  Holder of the keypair.
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
   newCredentialKeyPair (name) {
     const keygenContract = `rule check version 1.0.0
       Scenario 'coconut': issuer keygen
@@ -224,11 +235,12 @@ module.exports = class Zen {
   }
 
   /**
-    * Creates a new Signature Request.
-    * @param {string} name  Holder of the credential.
-    * @param {object} credentialKeyPair Keypair for the credentials (Zencode format)
-    * @return {promise} Return a promise with the execution of the creation.
-    */
+   * Creates a new Signature Request.
+   *
+   * @param {string} name  Holder of the credential.
+   * @param {object} credentialKeyPair Keypair for the credentials (Zencode format)
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
   credentialSignatureRequest (name, credentialKeyPair) {
     const zprocess = () => this.execute(credentialKeyPair, `rule check version 1.0.0
       Scenario 'coconut': create request
@@ -240,12 +252,13 @@ module.exports = class Zen {
   }
 
   /**
-    * Creates a new Credential keypair.
-    * @param {string} nameIssuer  Issuer of the credential.
-    * @param {object} issuerKeyPair Keypair for the Issuer (Zencode format)
-    * @param {object} signatureRequest signature Request by the Credential Holder.
-    * @return {promise} Return a promise with the execution of the creation.
-    */
+   * Creates a new Credential keypair.
+   *
+   * @param {string} nameIssuer  Issuer of the credential.
+   * @param {object} issuerKeyPair Keypair for the Issuer (Zencode format)
+   * @param {object} signatureRequest signature Request by the Credential Holder.
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
   signCredentialSignatureRequest (nameIssuer, issuerKeyPair, signatureRequest) {
     const zprocess = () => this.execute([issuerKeyPair, signatureRequest],
       `rule check version 1.0.0
@@ -261,12 +274,13 @@ module.exports = class Zen {
   }
 
   /**
-    * Aggregates signature to the credential Proof.
-    * @param {string} name  Holder of the keypair.
-    * @param {object} credentialKeyPair Keypair for the credentials (Zencode format)
-    * @param {object} credentialSignature Credential Request Signature
-    * @return {promise} Return a promise with the execution of the creation.
-    */
+   * Aggregates signature to the credential Proof.
+   *
+   * @param {string} name  Holder of the keypair.
+   * @param {object} credentialKeyPair Keypair for the credentials (Zencode format)
+   * @param {object} credentialSignature Credential Request Signature
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
   aggregateCredentialSignature (name, credentialKeyPair, credentialSignature) {
     const zprocess = () => this.execute([credentialKeyPair, credentialSignature],
       `rule check version 1.0.0
@@ -281,12 +295,14 @@ module.exports = class Zen {
   }
 
   /**
-    * Creates a new Credential Proof.
-    * @param {string} name  Holder of the credential.
-    * @param {string} nameIssuer Issuer of the credential.
-    * @param {object} keys Keypair for the credentials (Zencode format)
-    * @return {promise} Return a promise with the execution of the creation.
-    */
+   * Creates a new Credential Proof.
+   *
+   * @param {string} name  Holder of the credential.
+   * @param {string} nameIssuer Issuer of the credential.
+   * @param {object} credential to use
+   * @param {object} verifier of credential
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
   createCredentialProof (name, nameIssuer, credential, verifier) {
     const zprocess = () => this.execute([credential, verifier],
       `rule check version 1.0.0
@@ -303,9 +319,11 @@ module.exports = class Zen {
 
   /**
    * Verify a Credential Proof.
-   * @param {string} name  Holder of the keypair.
-   * @param {object} keys Keypair for the credentials (Zencode format)
-   * @return {promise} Return a promise with the execution of the creation.
+   *
+   * @param {string} nameIssuer Issuer
+   * @param {object} credentialProof to use
+   * @param {object} verifier to use
+   * @returns {Promise} Return a promise with the execution of the creation.
    */
   verifyCredentialProof (nameIssuer, credentialProof, verifier) {
     const zprocess = () => this.execute([credentialProof, verifier],
@@ -321,8 +339,9 @@ module.exports = class Zen {
 
   /**
    * Create a Hash
-   * @param {string} Source to be hashed
-   * @return {promise} Return a promise with the execution of the creation.
+   *
+   * @param {string} source to be hashed
+   * @returns {Promise} Return a promise with the execution of the creation.
    */
   hash (source) {
     const zprocess = () => this.execute(false,
