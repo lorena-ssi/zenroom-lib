@@ -337,6 +337,27 @@ module.exports = class Zen {
     return zprocess()
   }
 
+    /**
+   * Create a Hash
+   *
+   * @param {string} source to be hashed
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
+  async random () {
+    return new Promise((resolve) => {
+      const zprocess = () => this.execute(false,
+        `rule check version 1.0.0
+        Scenario simple: Generate a random password
+        Given nothing
+        When I create the array of '1' random objects of '256' bits
+        Then print the 'array'`)
+      zprocess().then((rnd) => {
+        resolve(rnd.array[0])
+      })
+      
+    })
+  }
+
   /**
    * Create a Hash
    *

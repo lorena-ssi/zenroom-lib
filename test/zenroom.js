@@ -11,6 +11,7 @@ const z = new Zen()
 describe('Zenroom', function () {
   // Keypairs.
   describe('KeyPair generation: ', () => {
+
     it('Should create a new KeyPair: ', async () => {
       aliceKeypair = await z.newKeyPair('Alice')
       assert.isNotEmpty(aliceKeypair.Alice.keypair)
@@ -161,4 +162,12 @@ describe('Zenroom', function () {
       assert.isNotEmpty(result.hash)
     })
   })
+
+  describe('Random: ', () => {
+    it('10. Should create a random Number: ', async () => {
+      let rnd = await z.random()
+      assert.isNotEmpty(rnd)      
+    })
+  })
+
 })
