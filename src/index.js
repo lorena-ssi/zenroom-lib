@@ -36,7 +36,7 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the script.
    */
   execute (keys, script) {
-    const options = { verbosity: 0 } // They need to implement verbosity https://github.com/DECODEproject/Zenroom/blob/master/bindings/javascript/src/wrapper.js
+    const options = { verbosity: 0 } // TODO: They need to implement verbosity https://github.com/DECODEproject/Zenroom/blob/master/bindings/javascript/src/wrapper.js
     return new Promise((resolve, reject) => {
       zenroom
         .init(options)
@@ -46,9 +46,10 @@ module.exports = class Zen {
           console.log(msg)
           resolve(JSON.parse(msg))
         })
-        .error((msg) => {
-          reject(msg)
-        })
+        // TODO: Zenroom wrapper doesn't dispatch error at the moment
+        // .error((msg) => {
+        //   reject(msg)
+        // })
         .zencode_exec()
     })
   }
