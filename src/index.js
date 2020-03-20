@@ -337,10 +337,9 @@ module.exports = class Zen {
     return zprocess()
   }
 
-    /**
+  /**
    * Create a Hash
    *
-   * @param {string} source to be hashed
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async random () {
@@ -354,7 +353,6 @@ module.exports = class Zen {
       zprocess().then((rnd) => {
         resolve(rnd.array[0])
       })
-      
     })
   }
 
