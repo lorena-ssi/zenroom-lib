@@ -2,9 +2,10 @@
 
 zenroom-lib is a javascript library to interact with the [Zenroom Virtual Machine](https://zenroom.org/)
 
-|Package|Branch|Pipeline|Coverage|
-|:-:|:-:|:-:|:-:|
-[![npm version](https://badge.fury.io/js/%40caelum-tech%2Fzenroom-lib.svg)](https://badge.fury.io/js/%40caelum-tech%2Fzenroom-lib)|[`master`](https://gitlab.com/caelum-tech/Lorena/zenroom-lib/tree/master)|[![pipeline status](https://gitlab.com/caelum-tech/Lorena/zenroom-lib/badges/master/pipeline.svg)](https://gitlab.com/caelum-tech/Lorena/zenroom-lib/commits/master)|[![coverage report](https://gitlab.com/caelum-tech/Lorena/zenroom-lib/badges/master/coverage.svg)](https://gitlab.com/caelum-tech/Lorena/zenroom-lib/commits/master)|
+
+[![npm version](https://badge.fury.io/js/%40lorena-ssi%2Fzenroom-lib.svg)](https://badge.fury.io/js/%40lorena-ssi%2Fzenroom-lib)
+[![Build Status](https://travis-ci.com/lorena-ssi/zenroom-lib.svg?branch=master)](https://travis-ci.com/lorena-ssi/zenroom-lib)
+[![Coverage Status](https://coveralls.io/repos/github/lorena-ssi/zenroom-lib/badge.svg?branch=master)](https://coveralls.io/github/lorena-ssi/zenroom-lib?branch=master)
 
 Zenroom is a tiny and portable virtual machine that integrates in any application to authenticate and restrict access to data and execute human-readable smart contracts.
 

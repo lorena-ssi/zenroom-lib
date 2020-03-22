@@ -1,4 +1,4 @@
-image: node:10.16
+image: node:12
 
 all_tests:
   script:
