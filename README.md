@@ -23,7 +23,7 @@ This library uses [Zenroom](https://www.npmjs.com/package/zenroom) 1.0.0 [which 
 
 Initialize
 ```javascript
-const Zen = require('@caelum-tech/zenroom-lib')
+const Zen = require('@lorena-ssi/zenroom-lib')
 let z = new Zen()
 ```
 

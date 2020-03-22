@@ -1,29 +1,33 @@
 'use strict'
 const zenroom = require('zenroom')
 
-// process.on('uncaughtException', function (err) {
-//   console.error((err && err.stack) ? err.stack : err)
-// })
+process.on('uncaughtException', function (err) {
+  console.error((err && err.stack) ? err.stack : err)
+})
 
-// async function silent (asyncFn) {
-//   const ogWriteStdout = process.stdout.write.bind(process.stdout)
-//   const ogWriteStdErr = process.stderr.write.bind(process.stderr)
+/**
+ * @param {Function} asyncFn Async function to execute in silence
+ */
+async function silent (asyncFn) {
+  const ogWriteStdout = process.stdout.write.bind(process.stdout)
+  const ogWriteStdErr = process.stderr.write.bind(process.stderr)
 
-//   const log = []
-//   const stdoutWrite = (data) => log.push({ stdout: data })
-//   const stderrWrite = (data) => log.push({ stderr: data })
+  const log = []
+  const stdoutWrite = (data) => log.push({ stdout: data })
+  const stderrWrite = (data) => log.push({ stderr: data })
 
-//   process.stdout.write = stdoutWrite
-//   process.stderr.write = stderrWrite
+  process.stdout.write = stdoutWrite
+  process.stderr.write = stderrWrite
 
-//   const result = await asyncFn()
+  const result = await asyncFn()
 
-//   // reset stdout
-//   process.stdout.write = ogWriteStdout
-//   process.stderr.write = ogWriteStdErr
+  // reset stdout
+  process.stdout.write = ogWriteStdout
+  process.stderr.write = ogWriteStdErr
 
-//   return result
-// }
+  return result
+}
+
 /**
  * Javascript Class to interact with Zenroom.
  */
@@ -43,7 +47,6 @@ module.exports = class Zen {
         .keys(keys)
         .script(script)
         .print((msg) => {
-          console.log(msg)
           resolve(JSON.parse(msg))
         })
         .error((msg) => {
@@ -67,7 +70,7 @@ module.exports = class Zen {
       When I create the keypair
       Then print my data`
     )
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -85,7 +88,7 @@ module.exports = class Zen {
       and I have my valid 'public key'
       Then print my data`
     )
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -110,7 +113,7 @@ module.exports = class Zen {
       and I encrypt the message for '` + toName + `'
       Then print the 'secret_message'`
     )
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -135,7 +138,7 @@ module.exports = class Zen {
       Then print as 'string' the 'message'
       and print as 'string' the 'header' inside 'secret message'`
     )
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -157,7 +160,7 @@ module.exports = class Zen {
       Then print my 'signature'
       and print my 'draft'`
     )
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -182,7 +185,7 @@ module.exports = class Zen {
     const keys = signature
     keys[signer].public_key = signerPublic[signer].public_key
     const zprocess = () => this.execute(keys, checkScript)
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -197,7 +200,7 @@ module.exports = class Zen {
     Given that I am known as '` + name + `'
     When I create the issuer keypair
     Then print my 'issuer keypair'`)
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -215,7 +218,7 @@ module.exports = class Zen {
       and I have a valid 'verifier'
       Then print my 'verifier'`
     )
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -231,7 +234,7 @@ module.exports = class Zen {
         When I create the credential keypair
         Then print my 'credential keypair'`
     const zprocess = () => this.execute(false, keygenContract)
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -248,7 +251,7 @@ module.exports = class Zen {
       and I have my valid 'credential keypair'
       When I create the credential request
       Then print my 'credential request'`)
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -270,7 +273,7 @@ module.exports = class Zen {
       Then print the 'credential signature'
       and print the 'verifier'`
     )
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -291,7 +294,7 @@ module.exports = class Zen {
       When I create the credentials
       Then print my 'credentials'
       and print my 'credential keypair'`)
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -314,7 +317,7 @@ module.exports = class Zen {
       When I aggregate the verifiers
       and I create the credential proof
       Then print the 'credential proof'`)
-    return zprocess()
+    return silent(zprocess)
   }
 
   /**
@@ -334,16 +337,16 @@ module.exports = class Zen {
       When I aggregate the verifiers
       and I verify the credential proof
       Then print 'Success' 'OK' as 'string'`)
-    return zprocess()
+    return silent(zprocess)
   }
 
-    /**
+  /**
    * Create a Hash
    *
-   * @param {string} source to be hashed
+   * @param {number} length Length of the random string
    * @returns {Promise} Return a promise with the execution of the creation.
    */
-  async random () {
+  async random (length = 32) {
     return new Promise((resolve) => {
       const zprocess = () => this.execute(false,
         `rule check version 1.0.0
@@ -351,10 +354,10 @@ module.exports = class Zen {
         Given nothing
         When I create the array of '1' random objects of '256' bits
         Then print the 'array'`)
-      zprocess().then((rnd) => {
-        resolve(rnd.array[0])
-      })
-      
+      silent(zprocess)
+        .then((rnd) => {
+          resolve(rnd.array[0].substring(0, length))
+        })
     })
   }
 
@@ -371,6 +374,6 @@ module.exports = class Zen {
       When I write '` + source + `' in 'source'
       and I create the hash of 'source'
       Then print the 'hash'`)
-    return zprocess()
+    return silent(zprocess)
   }
 }
