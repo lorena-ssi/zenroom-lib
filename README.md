@@ -11,13 +11,13 @@ Zenroom is a tiny and portable virtual machine that integrates in any applicatio
 
 ## Installation
 ```shell
-npm install @caelum-tech/zenroom-lib
+npm install @lorena-ssi/zenroom-lib
 ```
 
 ### For React
 This library uses [Zenroom](https://www.npmjs.com/package/zenroom) 1.0.0 [which has a problem](https://www.dyne.org/using-zenroom-with-javascript-react-part3/) with [create-react-app](https://create-react-app.dev/).  To fix this issue we've added [a script](https://gitlab.com/caelum-tech/lorena/zenroom-lib/blob/master/bin/zenroom_modules.sh) which patches the installed package:
 ```shell
-./node_modules/@caelum-tech/zenroom-lib/bin/zenroom_modules.sh
+./node_modules/@lorena-ssi/zenroom-lib/bin/zenroom_modules.sh
 ```
 
 ## Usage

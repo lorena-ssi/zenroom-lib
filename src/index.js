@@ -29,6 +29,16 @@ async function silent (asyncFn) {
 }
 
 /**
+ * returns the digital Root
+ *
+ * @param {number} n Number
+ * @returns {number} Digital Root (1 digit)
+ */
+function digitalRoot (n) {
+  return (n - 1) % 9 + 1
+}
+
+/**
  * Javascript Class to interact with Zenroom.
  */
 module.exports = class Zen {
@@ -93,7 +103,7 @@ module.exports = class Zen {
   }
 
   /**
-   * Encrypts a message with a keypair.
+   * Encrypts (asymmetric) a message with a keypair.
    *
    * @param {string} fromName Who's signing the message.
    * @param {object} fromKeys Keypair for the encrypter (Zencode format)
@@ -102,14 +112,16 @@ module.exports = class Zen {
    * @param {string} message Message to be encrypted
    * @returns {Promise} Return a promise with the execution of the encryption.
    */
-  encryptMessage (fromName, fromKeys, toName, toKeys, message) {
+  encryptAsymmetric (fromName, fromKeys, toName, toKeys, message) {
+    // Move to Hex.
+    const msg = Buffer.from(message, 'utf8')
     const zprocess = () => this.execute([fromKeys, toKeys],
       `Rule check version 1.0.0
       Scenario simple: ` + fromName + ' encrypts a message for ' + toName + `
       Given that I am known as '` + fromName + `'
       and I have my valid 'keypair'
       and I have a valid 'public key' from '` + toName + `'
-      When I write '` + message + `' in 'message'
+      When I write '${msg.toString('hex')}' in 'message'
       and I write 'This is the header' in 'header'
       and I encrypt the message for '` + toName + `'
       Then print the 'secret_message'`
@@ -118,7 +130,7 @@ module.exports = class Zen {
   }
 
   /**
-   * Decrypts a message with a keypair.
+   * Decrypts (asymmetric) a message with a keypair.
    *
    * @param {string} fromName Who's signing the message.
    * @param {object} fromKeys Keypair for the encrypter (Zencode format)
@@ -127,19 +139,81 @@ module.exports = class Zen {
    * @param {string} message Message to be decrypted
    * @returns {Promise} Return a promise with the execution of the encryption.
    */
-  decryptMessage (fromName, fromKeys, toName, toKeys, message) {
-    const zprocess = () => this.execute([fromKeys, toKeys, message],
+  decryptAsymmetric (fromName, fromKeys, toName, toKeys, message) {
+    return new Promise((resolve) => {
+      const zprocess = () => this.execute([fromKeys, toKeys, message],
+        `Rule check version 1.0.0
+        Scenario simple: ` + toName + ' decrypts the message for ' + fromName + `
+        Given that I am known as '` + toName + `'
+        and I have my valid 'keypair'
+        and I have a valid 'public key' from '` + fromName + `'
+        and I have a valid 'secret_message'
+        When I decrypt the secret message from '` + fromName + `'
+        Then print as 'string' the 'message'
+        and print as 'string' the 'header' inside 'secret message'`
+      )
+      silent(zprocess).then((msg) => {
+        const txt = Buffer.from(msg.message, 'hex')
+        resolve({
+          message: txt.toString('utf8')
+        })
+      })
+    })
+  }
+
+  /**
+   * Encrypts (symmetric) a message with a keypair.
+   *
+   * @param {string} password Password to encrypt the message
+   * @param {string} message Message to be encrypted
+   * @param {string} header Header to be included
+   * @returns {Promise} Return a promise with the execution of the encryption.
+   */
+  encryptSymmetric (password, message, header) {
+    // Move to Hex.
+    const msg = Buffer.from(message, 'utf8')
+    const hdr = Buffer.from(header, 'utf8')
+    // Encrypt.
+    const zprocess = () => this.execute(false,
       `Rule check version 1.0.0
-      Scenario simple: ` + toName + ' decrypts the message for ' + fromName + `
-      Given that I am known as '` + toName + `'
-      and I have my valid 'keypair'
-      and I have a valid 'public key' from '` + fromName + `'
-      and I have a valid 'secret_message'
-      When I decrypt the secret message from '` + fromName + `'
-      Then print as 'string' the 'message'
-      and print as 'string' the 'header' inside 'secret message'`
+      Scenario simple: Encrypt a message with the password
+      Given nothing
+      When I write '${password}' in 'password'
+      and I write '${msg.toString('hex')}' in 'whisper'
+      and I write '${hdr.toString('hex')}' in 'header'
+      and I encrypt the secret message 'whisper' with 'password'
+      Then print the 'secret message'`
     )
     return silent(zprocess)
+  }
+
+  /**
+   * Encrypts (symmetric) a message with a keypair.
+   *
+   * @param {string} password Password to decrypt the message
+   * @param {string} msgEncrypted Message to be decrypted
+   * @returns {Promise} Return a promise with the execution of the encryption.
+   */
+  decryptSymmetric (password, msgEncrypted) {
+    return new Promise((resolve) => {
+      const zprocess = () => this.execute([msgEncrypted],
+        `Rule check version 1.0.0
+        Scenario simple: Decrypt the message with the password
+        Given I have a valid 'secret message'
+        When I write '${password}' in 'password'
+        and I decrypt the secret message with 'password'
+        Then print as 'string' the 'text' inside 'message'
+        and print as 'string' the 'header' inside 'message'`
+      )
+      silent(zprocess).then((msg) => {
+        const txt = Buffer.from(msg.text, 'hex')
+        const hdr = Buffer.from(msg.header, 'hex')
+        resolve({
+          header: hdr.toString('utf8'),
+          message: txt.toString('utf8')
+        })
+      })
+    })
   }
 
   /**
@@ -342,7 +416,7 @@ module.exports = class Zen {
   }
 
   /**
-   * Create a Hash
+   * Create a Random string
    *
    * @param {number} length Length of the random string
    * @returns {Promise} Return a promise with the execution of the creation.
@@ -358,6 +432,25 @@ module.exports = class Zen {
       silent(zprocess)
         .then((rnd) => {
           resolve(rnd.array[0].substring(0, length))
+        })
+    })
+  }
+
+  /**
+   * Creates a random Pin
+   *
+   * @param {number} length Length of the random PIN
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
+  async randomPin (length = 6) {
+    return new Promise((resolve) => {
+      let pin = ''
+      this.random(length)
+        .then((rnd) => {
+          for (let i = 0; i < length; i++) {
+            pin += digitalRoot(rnd.charCodeAt(i))
+          }
+          resolve(pin)
         })
     })
   }

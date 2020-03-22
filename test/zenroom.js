@@ -3,9 +3,13 @@ const chai = require('chai')
   .use(require('chai-as-promised'))
 const assert = chai.assert
 
-const message = 'Hello_World'
+const message = 'Hello World'
+const password = 'password'
+const header = 'Header for encryption'
+
 let aliceKeypair; let alicePublic; let signature = false
 let bobKeypair; let bobPublic; let msgEncrypted = false
+let rnd = false
 const z = new Zen()
 
 describe('Zenroom', function () {
@@ -35,8 +39,8 @@ describe('Zenroom', function () {
 
   // Encryption.
   describe('Encryption: ', () => {
-    it('Should encrypt a message: ', async () => {
-      msgEncrypted = await z.encryptMessage('Alice', aliceKeypair, 'Bob', bobPublic, message)
+    it('Should encrypt (symmetric) a message: ', async () => {
+      msgEncrypted = await z.encryptSymmetric(password, message, header)
       assert.isNotEmpty(msgEncrypted.secret_message)
       assert.isNotEmpty(msgEncrypted.secret_message.iv)
       assert.isNotEmpty(msgEncrypted.secret_message.header)
@@ -44,8 +48,23 @@ describe('Zenroom', function () {
       assert.isNotEmpty(msgEncrypted.secret_message.checksum)
     })
 
-    it('Should decrypt a message: ', async () => {
-      const msg = await z.decryptMessage('Alice', alicePublic, 'Bob', bobKeypair, msgEncrypted)
+    it('Should decrypt (symmetric) a message: ', async () => {
+      const msg = await z.decryptSymmetric(password, msgEncrypted)
+      assert.equal(msg.message, message)
+      assert.equal(msg.header, header)
+    })
+
+    it('Should encrypt (asymmetric) a message: ', async () => {
+      msgEncrypted = await z.encryptAsymmetric('Alice', aliceKeypair, 'Bob', bobPublic, message)
+      assert.isNotEmpty(msgEncrypted.secret_message)
+      assert.isNotEmpty(msgEncrypted.secret_message.iv)
+      assert.isNotEmpty(msgEncrypted.secret_message.header)
+      assert.isNotEmpty(msgEncrypted.secret_message.text)
+      assert.isNotEmpty(msgEncrypted.secret_message.checksum)
+    })
+
+    it('Should decrypt a  (asymmetric) message: ', async () => {
+      const msg = await z.decryptAsymmetric('Alice', alicePublic, 'Bob', bobKeypair, msgEncrypted)
       assert.equal(msg.message, message)
     })
   })
@@ -163,12 +182,20 @@ describe('Zenroom', function () {
   })
 
   describe('Random: ', () => {
-    it('10. Should create a random Number: ', async () => {
-      let rnd = await z.random()
+    it('10. Should create a random String: ', async () => {
+      rnd = await z.random()
       assert.isNotEmpty(rnd)
       assert.equal(rnd.length, 32)
       rnd = await z.random(16)
       assert.equal(rnd.length, 16)
+    })
+
+    it('10. Should create a random PIN: ', async () => {
+      rnd = await z.randomPin()
+      assert.isNotEmpty(rnd)
+      assert.equal(rnd.length, 6)
+      rnd = await z.randomPin(4)
+      assert.equal(rnd.length, 4)
     })
   })
 })
