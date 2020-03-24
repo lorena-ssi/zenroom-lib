@@ -1,30 +1,32 @@
 'use strict'
 const zenroom = require('zenroom')
 
-process.on('uncaughtException', function (err) {
+/*
+  process.on('uncaughtException', function (err) {
   console.error((err && err.stack) ? err.stack : err)
-})
+}) */
 
 /**
  * @param {Function} asyncFn Async function to execute in silence
  */
 async function silent (asyncFn) {
+/*
   const ogWriteStdout = process.stdout.write.bind(process.stdout)
   const ogWriteStdErr = process.stderr.write.bind(process.stderr)
-
   const log = []
   const stdoutWrite = (data) => log.push({ stdout: data })
   const stderrWrite = (data) => log.push({ stderr: data })
 
   process.stdout.write = stdoutWrite
   process.stderr.write = stderrWrite
-
+*/
   const result = await asyncFn()
 
   // reset stdout
+  /*
   process.stdout.write = ogWriteStdout
   process.stderr.write = ogWriteStdErr
-
+  */
   return result
 }
 
