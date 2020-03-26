@@ -197,5 +197,11 @@ describe('Zenroom', function () {
       rnd = await z.randomPin(4)
       assert.equal(rnd.length, 4)
     })
+
+    it('11. Should create a random DID: ', async () => {
+      rnd = await z.randomDID()
+      assert.isNotEmpty(rnd)
+      assert.equal(rnd.length, 32)
+    })
   })
 })

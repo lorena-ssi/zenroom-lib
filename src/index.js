@@ -458,6 +458,21 @@ module.exports = class Zen {
   }
 
   /**
+   * Creates a random DID
+   *
+   * @returns {Promise} Return a promise with the execution of the creation.
+   */
+  async randomDID () {
+    return new Promise((resolve) => {
+      this.random(32)
+        .then((rnd) => {
+          var b = Buffer.from(rnd)
+          resolve(b.toString('base64').slice(0, 32))
+        })
+    })
+  }
+
+  /**
    * Create a Hash
    *
    * @param {string} source to be hashed
