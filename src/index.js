@@ -1,35 +1,6 @@
 'use strict'
 const zenroom = require('zenroom')
 
-/*
-  process.on('uncaughtException', function (err) {
-  console.error((err && err.stack) ? err.stack : err)
-}) */
-
-/**
- * @param {Function} asyncFn Async function to execute in silence
- */
-async function silent (asyncFn) {
-/*
-  const ogWriteStdout = process.stdout.write.bind(process.stdout)
-  const ogWriteStdErr = process.stderr.write.bind(process.stderr)
-  const log = []
-  const stdoutWrite = (data) => log.push({ stdout: data })
-  const stderrWrite = (data) => log.push({ stderr: data })
-
-  process.stdout.write = stdoutWrite
-  process.stderr.write = stderrWrite
-*/
-  const result = await asyncFn()
-
-  // reset stdout
-  /*
-  process.stdout.write = ogWriteStdout
-  process.stderr.write = ogWriteStdErr
-  */
-  return result
-}
-
 /**
  * returns the digital Root
  *
@@ -44,6 +15,41 @@ function digitalRoot (n) {
  * Javascript Class to interact with Zenroom.
  */
 module.exports = class Zen {
+  constructor (silent = false) {
+    this.isSilent = silent
+    if (this.isSilent) {
+      process.on('uncaughtException', function (err) {
+        console.error((err && err.stack) ? err.stack : err)
+      })
+    }
+  }
+
+  /**
+   * Adds verbosity = 0
+   *
+   * @param {Function} asyncFn Async function to execute in silence
+   */
+  async silent (asyncFn) {
+    let result
+    if (this.isSilent) {
+      const ogWriteStdout = process.stdout.write.bind(process.stdout)
+      const ogWriteStdErr = process.stderr.write.bind(process.stderr)
+      const log = []
+      const stdoutWrite = (data) => log.push({ stdout: data })
+      const stderrWrite = (data) => log.push({ stderr: data })
+      process.stdout.write = stdoutWrite
+      process.stderr.write = stderrWrite
+      result = await asyncFn()
+      // reset stdout
+
+      process.stdout.write = ogWriteStdout
+      process.stderr.write = ogWriteStdErr
+    } else {
+      result = await asyncFn()
+    }
+    return result
+  }
+
   /**
    * Executes Zencode.
    *
@@ -83,7 +89,7 @@ module.exports = class Zen {
       When I create the keypair
       Then print my data`
     )
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -101,7 +107,7 @@ module.exports = class Zen {
       and I have my valid 'public key'
       Then print my data`
     )
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -128,7 +134,7 @@ module.exports = class Zen {
       and I encrypt the message for '` + toName + `'
       Then print the 'secret_message'`
     )
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -154,7 +160,7 @@ module.exports = class Zen {
         Then print as 'string' the 'message'
         and print as 'string' the 'header' inside 'secret message'`
       )
-      silent(zprocess).then((msg) => {
+      this.silent(zprocess).then((msg) => {
         const txt = Buffer.from(msg.message, 'hex')
         resolve({
           message: txt.toString('utf8')
@@ -186,7 +192,7 @@ module.exports = class Zen {
       and I encrypt the secret message 'whisper' with 'password'
       Then print the 'secret message'`
     )
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -207,7 +213,7 @@ module.exports = class Zen {
         Then print as 'string' the 'text' inside 'message'
         and print as 'string' the 'header' inside 'message'`
       )
-      silent(zprocess).then((msg) => {
+      this.silent(zprocess).then((msg) => {
         const txt = Buffer.from(msg.text, 'hex')
         const hdr = Buffer.from(msg.header, 'hex')
         resolve({
@@ -237,7 +243,7 @@ module.exports = class Zen {
       Then print my 'signature'
       and print my 'draft'`
     )
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -262,7 +268,7 @@ module.exports = class Zen {
     const keys = signature
     keys[signer].public_key = signerPublic[signer].public_key
     const zprocess = () => this.execute(keys, checkScript)
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -277,7 +283,7 @@ module.exports = class Zen {
     Given that I am known as '` + name + `'
     When I create the issuer keypair
     Then print my 'issuer keypair'`)
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -295,7 +301,7 @@ module.exports = class Zen {
       and I have a valid 'verifier'
       Then print my 'verifier'`
     )
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -311,7 +317,7 @@ module.exports = class Zen {
         When I create the credential keypair
         Then print my 'credential keypair'`
     const zprocess = () => this.execute(false, keygenContract)
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -328,7 +334,7 @@ module.exports = class Zen {
       and I have my valid 'credential keypair'
       When I create the credential request
       Then print my 'credential request'`)
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -350,7 +356,7 @@ module.exports = class Zen {
       Then print the 'credential signature'
       and print the 'verifier'`
     )
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -371,7 +377,7 @@ module.exports = class Zen {
       When I create the credentials
       Then print my 'credentials'
       and print my 'credential keypair'`)
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -394,7 +400,7 @@ module.exports = class Zen {
       When I aggregate the verifiers
       and I create the credential proof
       Then print the 'credential proof'`)
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -414,7 +420,7 @@ module.exports = class Zen {
       When I aggregate the verifiers
       and I verify the credential proof
       Then print 'Success' 'OK' as 'string'`)
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 
   /**
@@ -431,7 +437,7 @@ module.exports = class Zen {
         Given nothing
         When I create the array of '1' random objects of '256' bits
         Then print the 'array'`)
-      silent(zprocess)
+      this.silent(zprocess)
         .then((rnd) => {
           resolve(rnd.array[0].substring(0, length))
         })
@@ -485,6 +491,6 @@ module.exports = class Zen {
       When I write '` + source + `' in 'source'
       and I create the hash of 'source'
       Then print the 'hash'`)
-    return silent(zprocess)
+    return this.silent(zprocess)
   }
 }

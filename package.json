@@ -1,6 +1,6 @@
 {
   "name": "@lorena-ssi/zenroom-lib",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "zenroom-lib is a javascript library to interact with the Zenroom Virtual Machine",
   "main": "src/index.js",
   "author": "Alex Puig",

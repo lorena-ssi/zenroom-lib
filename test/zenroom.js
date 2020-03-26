@@ -10,7 +10,7 @@ const header = 'Header for encryption'
 let aliceKeypair; let alicePublic; let signature = false
 let bobKeypair; let bobPublic; let msgEncrypted = false
 let rnd = false
-const z = new Zen()
+const z = new Zen(true)
 
 describe('Zenroom', function () {
   // Keypairs.
