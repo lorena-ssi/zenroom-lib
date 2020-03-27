@@ -188,6 +188,8 @@ describe('Zenroom', function () {
       assert.equal(rnd.length, 32)
       rnd = await z.random(16)
       assert.equal(rnd.length, 16)
+      rnd = await z.random(8)
+      assert.equal(rnd.length, 8)
     })
 
     it('10. Should create a random PIN: ', async () => {

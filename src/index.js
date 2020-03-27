@@ -439,7 +439,8 @@ module.exports = class Zen {
         Then print the 'array'`)
       this.silent(zprocess)
         .then((rnd) => {
-          resolve(rnd.array[0].substring(0, length))
+          var b = Buffer.from(rnd.array[0])
+          resolve(b.toString('base64').substring(0, length))
         })
     })
   }
