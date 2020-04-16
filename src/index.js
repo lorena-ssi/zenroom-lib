@@ -18,36 +18,12 @@ module.exports = class Zen {
   constructor (silent = false) {
     this.isSilent = silent
     if (this.isSilent) {
+      this.ogWriteStdout = process.stdout.write.bind(process.stdout)
+      this.ogWriteStdErr = process.stderr.write.bind(process.stderr)
       process.on('uncaughtException', function (err) {
         console.error((err && err.stack) ? err.stack : err)
       })
     }
-  }
-
-  /**
-   * Adds verbosity = 0
-   *
-   * @param {Function} asyncFn Async function to execute in silence
-   */
-  async silent (asyncFn) {
-    let result
-    if (this.isSilent) {
-      const ogWriteStdout = process.stdout.write.bind(process.stdout)
-      const ogWriteStdErr = process.stderr.write.bind(process.stderr)
-      const log = []
-      const stdoutWrite = (data) => log.push({ stdout: data })
-      const stderrWrite = (data) => log.push({ stderr: data })
-      process.stdout.write = stdoutWrite
-      process.stderr.write = stderrWrite
-      result = await asyncFn()
-      // reset stdout
-
-      process.stdout.write = ogWriteStdout
-      process.stderr.write = ogWriteStdErr
-    } else {
-      result = await asyncFn()
-    }
-    return result
   }
 
   /**
@@ -58,8 +34,16 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the script.
    */
   async execute (keys, script) {
-    const options = { verbosity: 0 } // TODO: They need to implement verbosity https://github.com/DECODEproject/Zenroom/blob/master/bindings/javascript/src/wrapper.js
+    const options = { verbosity: 0 }
+
     return new Promise((resolve, reject) => {
+      const log = []
+      if (this.isSilent) {
+        this.stdoutWrite = (data) => log.push({ stdout: data })
+        this.stderrWrite = (data) => log.push({ stderr: data })
+        process.stdout.write = this.stdoutWrite
+        process.stderr.write = this.stderrWrite // TODO: They need to implement verbosity https://github.com/DECODEproject/Zenroom/blob/master/bindings/javascript/src/wrapper.js
+      }
       zenroom
         .init(options)
         .keys(keys)
@@ -67,11 +51,14 @@ module.exports = class Zen {
         .print((msg) => {
           resolve(JSON.parse(msg))
         })
-        // TODO: Zenroom wrapper doesn't dispatch error at the moment
-        // .error((msg) => {
-        //   reject(msg)
-        // })
+        .error(() => {
+          reject(new Error('Zenroom error' + log))
+        })
         .zencode_exec()
+      if (this.isSilent) {
+        process.stdout.write = this.ogWriteStdout
+        process.stderr.write = this.ogWriteStdErr
+      }
     })
   }
 
@@ -82,14 +69,13 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async newKeyPair (name) {
-    const zprocess = () => this.execute(false,
+    return this.execute(false,
       `rule check version 1.0.0
       Scenario simple: Create the keypair
       Given that I am known as '` + name + `'
       When I create the keypair
       Then print my data`
     )
-    return this.silent(zprocess)
   }
 
   /**
@@ -100,14 +86,13 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async publicKey (name, keys) {
-    const zprocess = () => this.execute(keys,
+    return this.execute(keys,
       `rule check version 1.0.0
       Scenario simple Create the keypair
       Given that I am known as '` + name + `'
       and I have my valid 'public key'
       Then print my data`
     )
-    return this.silent(zprocess)
   }
 
   /**
@@ -123,7 +108,7 @@ module.exports = class Zen {
   async encryptAsymmetric (fromName, fromKeys, toName, toKeys, message) {
     // Move to Hex.
     const msg = Buffer.from(message, 'utf8')
-    const zprocess = () => this.execute([fromKeys, toKeys],
+    return this.execute([fromKeys, toKeys],
       `Rule check version 1.0.0
       Scenario simple: ` + fromName + ' encrypts a message for ' + toName + `
       Given that I am known as '` + fromName + `'
@@ -134,7 +119,6 @@ module.exports = class Zen {
       and I encrypt the message for '` + toName + `'
       Then print the 'secret_message'`
     )
-    return this.silent(zprocess)
   }
 
   /**
@@ -149,7 +133,7 @@ module.exports = class Zen {
    */
   async decryptAsymmetric (fromName, fromKeys, toName, toKeys, message) {
     return new Promise((resolve) => {
-      const zprocess = () => this.execute([fromKeys, toKeys, message],
+      this.execute([fromKeys, toKeys, message],
         `Rule check version 1.0.0
         Scenario simple: ` + toName + ' decrypts the message for ' + fromName + `
         Given that I am known as '` + toName + `'
@@ -159,8 +143,7 @@ module.exports = class Zen {
         When I decrypt the secret message from '` + fromName + `'
         Then print as 'string' the 'message'
         and print as 'string' the 'header' inside 'secret message'`
-      )
-      this.silent(zprocess).then((msg) => {
+      ).then((msg) => {
         const txt = Buffer.from(msg.message, 'hex')
         resolve({
           message: txt.toString('utf8')
@@ -182,17 +165,16 @@ module.exports = class Zen {
     const msg = Buffer.from(message, 'utf8')
     const hdr = Buffer.from(header, 'utf8')
     // Encrypt.
-    const zprocess = () => this.execute(false,
-      `Rule check version 1.0.0
-      Scenario simple: Encrypt a message with the password
-      Given nothing
-      When I write '${password}' in 'password'
-      and I write '${msg.toString('hex')}' in 'whisper'
-      and I write '${hdr.toString('hex')}' in 'header'
-      and I encrypt the secret message 'whisper' with 'password'
-      Then print the 'secret message'`
+    return this.execute(false,
+        `Rule check version 1.0.0
+        Scenario simple: Encrypt a message with the password
+        Given nothing
+        When I write '${password}' in 'password'
+        and I write '${msg.toString('hex')}' in 'whisper'
+        and I write '${hdr.toString('hex')}' in 'header'
+        and I encrypt the secret message 'whisper' with 'password'
+        Then print the 'secret message'`
     )
-    return this.silent(zprocess)
   }
 
   /**
@@ -204,7 +186,7 @@ module.exports = class Zen {
    */
   async decryptSymmetric (password, msgEncrypted) {
     return new Promise((resolve) => {
-      const zprocess = () => this.execute([msgEncrypted],
+      this.execute([msgEncrypted],
         `Rule check version 1.0.0
         Scenario simple: Decrypt the message with the password
         Given I have a valid 'secret message'
@@ -212,14 +194,15 @@ module.exports = class Zen {
         and I decrypt the secret message with 'password'
         Then print as 'string' the 'text' inside 'message'
         and print as 'string' the 'header' inside 'message'`
-      )
-      this.silent(zprocess).then((msg) => {
+      ).then((msg) => {
         const txt = Buffer.from(msg.text, 'hex')
         const hdr = Buffer.from(msg.header, 'hex')
         resolve({
           header: hdr.toString('utf8'),
           message: txt.toString('utf8')
         })
+      }).catch(_e => {
+        resolve(false)
       })
     })
   }
@@ -233,7 +216,7 @@ module.exports = class Zen {
    * @returns {Promise} Returns a promise with the execution of the signature.
    */
   async signMessage (signer, keys, message) {
-    const zprocess = () => this.execute(keys,
+    return this.execute(keys,
       `Rule check version 1.0.0
       Scenario simple: ` + signer + ` signs a message for Recipient
       Given that I am known as '` + signer + `'
@@ -243,7 +226,6 @@ module.exports = class Zen {
       Then print my 'signature'
       and print my 'draft'`
     )
-    return this.silent(zprocess)
   }
 
   /**
@@ -267,8 +249,7 @@ module.exports = class Zen {
       Then print 'signature' 'correct' as 'string'`
     const keys = signature
     keys[signer].public_key = signerPublic[signer].public_key
-    const zprocess = () => this.execute(keys, checkScript)
-    return this.silent(zprocess)
+    return this.execute(keys, checkScript)
   }
 
   /**
@@ -278,12 +259,11 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async newIssuerKeyPair (name) {
-    const zprocess = () => this.execute(false, `rule check version 1.0.0
+    return this.execute(false, `rule check version 1.0.0
     Scenario 'coconut': issuer keygen
     Given that I am known as '` + name + `'
     When I create the issuer keypair
     Then print my 'issuer keypair'`)
-    return this.silent(zprocess)
   }
 
   /**
@@ -294,14 +274,13 @@ module.exports = class Zen {
    * @returns {Promise} Returns a promise with the execution of the signature.
    */
   async publishVerifier (verifier, keys) {
-    const zprocess = () => this.execute(keys,
+    return this.execute(keys,
       `rule check version 1.0.0
       Scenario 'coconut': publish verifier
       Given that I am known as '` + verifier + `'
       and I have a valid 'verifier'
       Then print my 'verifier'`
     )
-    return this.silent(zprocess)
   }
 
   /**
@@ -316,8 +295,7 @@ module.exports = class Zen {
         Given that I am known as '` + name + `'
         When I create the credential keypair
         Then print my 'credential keypair'`
-    const zprocess = () => this.execute(false, keygenContract)
-    return this.silent(zprocess)
+    return this.execute(false, keygenContract)
   }
 
   /**
@@ -328,13 +306,12 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async credentialSignatureRequest (name, credentialKeyPair) {
-    const zprocess = () => this.execute(credentialKeyPair, `rule check version 1.0.0
+    return this.execute(credentialKeyPair, `rule check version 1.0.0
       Scenario 'coconut': create request
       Given that I am known as '` + name + `'
       and I have my valid 'credential keypair'
       When I create the credential request
       Then print my 'credential request'`)
-    return this.silent(zprocess)
   }
 
   /**
@@ -346,7 +323,7 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async signCredentialSignatureRequest (nameIssuer, issuerKeyPair, signatureRequest) {
-    const zprocess = () => this.execute([issuerKeyPair, signatureRequest],
+    return this.execute([issuerKeyPair, signatureRequest],
       `rule check version 1.0.0
       Scenario 'coconut': issuer sign
       Given that I am known as '` + nameIssuer + `'
@@ -356,7 +333,6 @@ module.exports = class Zen {
       Then print the 'credential signature'
       and print the 'verifier'`
     )
-    return this.silent(zprocess)
   }
 
   /**
@@ -368,7 +344,7 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async aggregateCredentialSignature (name, credentialKeyPair, credentialSignature) {
-    const zprocess = () => this.execute([credentialKeyPair, credentialSignature],
+    return this.execute([credentialKeyPair, credentialSignature],
       `rule check version 1.0.0
       Scenario coconut: aggregate signature
       Given that I am known as '` + name + `'
@@ -377,7 +353,6 @@ module.exports = class Zen {
       When I create the credentials
       Then print my 'credentials'
       and print my 'credential keypair'`)
-    return this.silent(zprocess)
   }
 
   /**
@@ -390,7 +365,7 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async createCredentialProof (name, nameIssuer, credential, verifier) {
-    const zprocess = () => this.execute([credential, verifier],
+    return this.execute([credential, verifier],
       `rule check version 1.0.0
       Scenario coconut: create proof
       Given that I am known as '` + name + `'
@@ -400,7 +375,6 @@ module.exports = class Zen {
       When I aggregate the verifiers
       and I create the credential proof
       Then print the 'credential proof'`)
-    return this.silent(zprocess)
   }
 
   /**
@@ -412,7 +386,7 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async verifyCredentialProof (nameIssuer, credentialProof, verifier) {
-    const zprocess = () => this.execute([credentialProof, verifier],
+    return this.execute([credentialProof, verifier],
       `rule check version 1.0.0
       Scenario coconut: verify proof
       Given that I have a valid 'verifier' from '` + nameIssuer + `'
@@ -420,7 +394,6 @@ module.exports = class Zen {
       When I aggregate the verifiers
       and I verify the credential proof
       Then print 'Success' 'OK' as 'string'`)
-    return this.silent(zprocess)
   }
 
   /**
@@ -431,17 +404,15 @@ module.exports = class Zen {
    */
   async random (length = 32) {
     return new Promise((resolve) => {
-      const zprocess = () => this.execute(false,
+      this.execute(false,
         `rule check version 1.0.0
         Scenario simple: Generate a random password
         Given nothing
         When I create the array of '1' random objects of '256' bits
-        Then print the 'array'`)
-      this.silent(zprocess)
-        .then((rnd) => {
-          var b = Buffer.from(rnd.array[0])
-          resolve(b.toString('base64').substring(0, length))
-        })
+        Then print the 'array'`).then((rnd) => {
+        var b = Buffer.from(rnd.array[0])
+        resolve(b.toString('base64').substring(0, length))
+      })
     })
   }
 
@@ -486,12 +457,11 @@ module.exports = class Zen {
    * @returns {Promise} Return a promise with the execution of the creation.
    */
   async hash (source) {
-    const zprocess = () => this.execute(false,
+    return this.execute(false,
       `rule output encoding hex
       Given nothing
       When I write '` + source + `' in 'source'
       and I create the hash of 'source'
       Then print the 'hash'`)
-    return this.silent(zprocess)
   }
 }
