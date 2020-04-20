@@ -20,7 +20,9 @@ module.exports = class Zen {
     if (this.isSilent) {
       this.ogWriteStdout = process.stdout.write.bind(process.stdout)
       this.ogWriteStdErr = process.stderr.write.bind(process.stderr)
+      /* istanbul ignore next */
       process.on('uncaughtException', function (err) {
+        /* istanbul ignore next */
         console.error((err && err.stack) ? err.stack : err)
       })
     }
@@ -39,6 +41,7 @@ module.exports = class Zen {
     return new Promise((resolve, reject) => {
       const log = []
       if (this.isSilent) {
+        /* istanbul ignore next */
         this.stdoutWrite = (data) => log.push({ stdout: data })
         this.stderrWrite = (data) => log.push({ stderr: data })
         process.stdout.write = this.stdoutWrite

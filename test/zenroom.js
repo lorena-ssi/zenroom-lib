@@ -15,7 +15,7 @@ const z = new Zen(true)
 describe('Zenroom', function () {
   // Keypairs.
   describe('Should work with silent false', async () => {
-    const z2 = new Zen(false)
+    const z2 = new Zen() // false is default
     const aliceKeypair2 = await z2.newKeyPair('Alice')
     assert(!z2.isSilent)
     assert.isNotEmpty(aliceKeypair2.Alice.keypair)
