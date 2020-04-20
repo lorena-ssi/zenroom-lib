@@ -205,7 +205,7 @@ describe('Zenroom', function () {
       assert.equal(rnd.length, 8)
     })
 
-    it('10. Should create a random PIN: ', async () => {
+    it('11. Should create a random PIN: ', async () => {
       rnd = await z.randomPin()
       assert.isNotEmpty(rnd)
       assert.equal(rnd.length, 6)
@@ -213,7 +213,7 @@ describe('Zenroom', function () {
       assert.equal(rnd.length, 4)
     })
 
-    it('11. Should create a random DID: ', async () => {
+    it('12. Should create a random DID: ', async () => {
       rnd = await z.randomDID()
       assert.isNotEmpty(rnd)
       assert.equal(rnd.length, 32)
