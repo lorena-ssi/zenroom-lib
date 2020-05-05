@@ -114,8 +114,8 @@ module.exports = class Zen {
       Given that I am known as '` + fromName + `'
       and I have my valid 'keypair'
       and I have a valid 'public key' from '` + toName + `'
-      When I write '${msg.toString('hex')}' in 'message'
-      and I write 'This is the header' in 'header'
+      When I write string '${msg.toString('hex')}' in 'message'
+      and I write string 'This is the header' in 'header'
       and I encrypt the message for '` + toName + `'
       Then print the 'secret_message'`
     )
@@ -169,9 +169,9 @@ module.exports = class Zen {
         `Rule check version 1.0.0
         Scenario simple: Encrypt a message with the password
         Given nothing
-        When I write '${password}' in 'password'
-        and I write '${msg.toString('hex')}' in 'whisper'
-        and I write '${hdr.toString('hex')}' in 'header'
+        When I write string '${password}' in 'password'
+        and I write string '${msg.toString('hex')}' in 'whisper'
+        and I write string '${hdr.toString('hex')}' in 'header'
         and I encrypt the secret message 'whisper' with 'password'
         Then print the 'secret message'`
     )
@@ -190,7 +190,7 @@ module.exports = class Zen {
         `Rule check version 1.0.0
         Scenario simple: Decrypt the message with the password
         Given I have a valid 'secret message'
-        When I write '${password}' in 'password'
+        When I write string '${password}' in 'password'
         and I decrypt the secret message with 'password'
         Then print as 'string' the 'text' inside 'message'
         and print as 'string' the 'header' inside 'message'`
@@ -221,7 +221,7 @@ module.exports = class Zen {
       Scenario simple: ` + signer + ` signs a message for Recipient
       Given that I am known as '` + signer + `'
       and I have my valid 'keypair'
-      When I write '${message}' in 'draft'
+      When I write string '${message}' in 'draft'
       and I create the signature of 'draft'
       Then print my 'signature'
       and print my 'draft'`
@@ -460,7 +460,7 @@ module.exports = class Zen {
     return this.execute(false,
       `rule output encoding hex
       Given nothing
-      When I write '` + source + `' in 'source'
+      When I write string '` + source + `' in 'source'
       and I create the hash of 'source'
       Then print the 'hash'`)
   }
