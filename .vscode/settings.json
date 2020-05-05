@@ -3,6 +3,7 @@
     "Keypair",
     "Zencode",
     "Zenroom",
+    "badpassword",
     "encrypter",
     "keypairs",
     "zprocess"
