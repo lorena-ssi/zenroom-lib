@@ -1,6 +1,6 @@
 {
   "name": "@lorena-ssi/zenroom-lib",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "zenroom-lib is a javascript library to interact with the Zenroom Virtual Machine",
   "main": "src/index.js",
   "author": "Alex Puig",
@@ -22,17 +22,17 @@
   "dependencies": {
     "@babel/core": "^7.9.6",
     "js-base64": "^2.5.2",
-    "zenroom": "1.1.0"
+    "zenroom": "1.1.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.1.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.0.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-chai-friendly": "^0.6.0",
     "eslint-plugin-import": "^2.20.2",
-    "eslint-plugin-jsdoc": "^24.0.2",
+    "eslint-plugin-jsdoc": "^25.4.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
