@@ -33,9 +33,10 @@ module.exports = class Zen {
    *
    * @param {object} keys  Input keys.
    * @param {string} script Zencode to be executed
+   * @param {Buffer=} data (optional) data to be encrypted
    * @returns {Promise} Return a promise with the execution of the script.
    */
-  async execute (keys, script) {
+  async execute (keys, script, data = undefined) {
     const options = { verbosity: 0 }
 
     return new Promise((resolve, reject) => {
@@ -50,6 +51,7 @@ module.exports = class Zen {
       zenroom
         .init(options)
         .keys(keys)
+        .data(data)
         .script(script)
         .print((msg) => {
           resolve(JSON.parse(msg))
@@ -113,14 +115,15 @@ module.exports = class Zen {
     const msg = Buffer.from(message, 'utf8')
     return this.execute([fromKeys, toKeys],
       `Rule check version 1.0.0
-      Scenario simple: ` + fromName + ' encrypts a message for ' + toName + `
-      Given that I am known as '` + fromName + `'
+      Scenario 'simple': ${fromName} sends a secret to ${toName}
+      Given that I am known as '${fromName}'
       and I have my valid 'keypair'
       and I have a valid 'public key' from '` + toName + `'
       When I write string '${msg.toString('hex')}' in 'message'
-      and I write string 'This is the header' in 'header'
-      and I encrypt the message for '` + toName + `'
-      Then print the 'secret_message'`
+      and I write string 'Header for encryption' in 'header'
+      and I encrypt the message for '${toName}'
+      Then print the 'secret_message'`,
+      msg
     )
   }
 
@@ -165,23 +168,25 @@ module.exports = class Zen {
    */
   async encryptSymmetric (password, message, header) {
     // Move to Hex.
-    const msg = Buffer.from(message, 'utf8')
+    // const secret = { message: Buffer.from(message, 'hex').toString() }
     const hdr = Buffer.from(header, 'utf8')
+
     // Encrypt.
+    const data = { Encryptor: { whisper: Buffer.from(message) } }
     return this.execute(false,
         `Rule check version 1.0.0
         Scenario simple: Encrypt a message with the password
-        Given nothing
+        Given that I am known as 'Encryptor'
+        and I have a 'whisper'
         When I write string '${password}' in 'password'
-        and I write string '${msg.toString('hex')}' in 'whisper'
         and I write string '${hdr.toString('hex')}' in 'header'
         and I encrypt the secret message 'whisper' with 'password'
-        Then print the 'secret message'`
+        Then print the 'secret message'`, data
     )
   }
 
   /**
-   * Encrypts (symmetric) a message with a keypair.
+   * Decrypts (symmetric) a message with a keypair.
    *
    * @param {string} password Password to decrypt the message
    * @param {string} msgEncrypted Message to be decrypted
@@ -198,6 +203,7 @@ module.exports = class Zen {
         Then print as 'string' the 'text' inside 'message'
         and print as 'string' the 'header' inside 'message'`
       ).then((msg) => {
+        console.log('MSSSSG', msg)
         const txt = Buffer.from(msg.text, 'hex')
         const hdr = Buffer.from(msg.header, 'hex')
         resolve({
