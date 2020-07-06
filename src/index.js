@@ -173,9 +173,8 @@ module.exports = class Zen {
 
     // Encrypt.
     const data = { message: Buffer.from(message, 'utf8').toString('hex') }
-    console.log('MESSAGE', message)
     return this.execute(false,
-        `Rule check version 1.0.0
+        `
         Scenario simple: Encrypt a message with the password
         Given that I have a 'message'
         When I write string '${password}' in 'password'
@@ -203,8 +202,6 @@ module.exports = class Zen {
         Then print as 'string' the 'text' inside 'message'
         and print as 'string' the 'header' inside 'message'`
       ).then((msg) => {
-        console.log('MSSSSG', msg)
-        console.log('TEXT', Buffer.from(msg.text, 'hex').toString())
         const txt = Buffer.from(msg.text, 'hex')
         const hdr = Buffer.from(msg.header, 'hex')
         resolve({

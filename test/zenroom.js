@@ -53,7 +53,6 @@ describe('Zenroom', function () {
     [shortMessage].forEach((message) => {
       it(`Should encrypt (symmetric) a ${message.length} char string: `, async () => {
         msgEncrypted = await z.encryptSymmetric(password, message, header)
-        console.log('msgEncrypted!!!', msgEncrypted)
         assert.isNotEmpty(msgEncrypted.secret_message)
         assert.isNotEmpty(msgEncrypted.secret_message.iv)
         assert.isNotEmpty(msgEncrypted.secret_message.header)
