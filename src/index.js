@@ -172,16 +172,16 @@ module.exports = class Zen {
     const hdr = Buffer.from(header, 'utf8')
 
     // Encrypt.
-    const data = { Encryptor: { whisper: Buffer.from(message) } }
+    const data = { message: Buffer.from(message, 'utf8').toString('hex') }
+    console.log('MESSAGE', message)
     return this.execute(false,
         `Rule check version 1.0.0
         Scenario simple: Encrypt a message with the password
-        Given that I am known as 'Encryptor'
-        and I have a 'whisper'
+        Given that I have a 'message'
         When I write string '${password}' in 'password'
         and I write string '${hdr.toString('hex')}' in 'header'
-        and I encrypt the secret message 'whisper' with 'password'
-        Then print the 'secret message'`, data
+        and I encrypt the secret message 'message' with 'password'
+        Then print all data`, data
     )
   }
 
@@ -204,11 +204,12 @@ module.exports = class Zen {
         and print as 'string' the 'header' inside 'message'`
       ).then((msg) => {
         console.log('MSSSSG', msg)
+        console.log('TEXT', Buffer.from(msg.text, 'hex').toString())
         const txt = Buffer.from(msg.text, 'hex')
         const hdr = Buffer.from(msg.header, 'hex')
         resolve({
-          header: hdr.toString('utf8'),
-          message: txt.toString('utf8')
+          header: hdr.toString(),
+          message: txt.toString()
         })
       }).catch(_e => {
         resolve(false)
