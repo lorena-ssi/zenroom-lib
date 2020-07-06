@@ -33,10 +33,10 @@ module.exports = class Zen {
    *
    * @param {object} keys  Input keys.
    * @param {string} script Zencode to be executed
-   * @param {Buffer=} data (optional) data to be encrypted
+   * @param {Buffer=} paramData (optional) data to be encrypted
    * @returns {Promise} Return a promise with the execution of the script.
    */
-  async execute (keys, script, data = undefined) {
+  async execute (keys, script, paramData = undefined) {
     const options = { verbosity: 0 }
 
     return new Promise((resolve, reject) => {
@@ -51,7 +51,7 @@ module.exports = class Zen {
       zenroom
         .init(options)
         .keys(keys)
-        .data(data)
+        .data(paramData)
         .script(script)
         .print((msg) => {
           resolve(JSON.parse(msg))

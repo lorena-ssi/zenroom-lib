@@ -23,11 +23,11 @@ describe('Zenroom', function () {
       const data = { message: Buffer.from(message, 'utf8').toString('hex') }
       const z3 = new Zen() // false is default
       const result = await z3.execute(false,
-          `
-          Given that I have a 'message'
+          `Given that I have a 'message'
           Then print all data`, data
       )
-      assert.strictEqual(result.message, Buffer.from(message, 'utf8').toString('hex'))
+      // expecting "68656c6c6f20776f726c64" but receiving "68656c6c6f20776f726c6w"
+      assert.strictEqual(data.message, result.message)
     })
   })
 
